@@ -154,10 +154,17 @@ public class ClientsController : Controller
         var client = await _db.Clients.FindAsync(id);
         if (client == null) return NotFound();
 
-        _db.Clients.Remove(client);
-        await _db.SaveChangesAsync();
-
-        TempData["Success"] = "Client deleted.";
-        return RedirectToAction(nameof(Index));
+        try
+        {
+            _db.Clients.Remove(client);
+            await _db.SaveChangesAsync();
+            TempData["Success"] = "Client deleted.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (DbUpdateException)
+        {
+            TempData["Error"] = "Cannot delete this client because they have linked tickets or devices. Remove them first.";
+            return RedirectToAction(nameof(Delete), new { id });
+        }
     }
 }
