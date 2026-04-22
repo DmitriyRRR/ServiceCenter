@@ -1,0 +1,45 @@
+@model ServiceCenter.Domain.Entities.Device
+@{
+    ViewData["Title"] = "Delete Device";
+    ViewData["Breadcrumb"] = "<a href='/Devices' class='text-decoration-none'>Devices</a> / Delete";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h4 class="fw-semibold mb-0">Delete Device</h4>
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+</div>
+
+<div class="card border-danger" style="max-width:520px">
+    <div class="card-header bg-danger text-white fw-semibold">
+        <i class="bi bi-exclamation-triangle me-2"></i>Confirm Deletion
+    </div>
+    <div class="card-body">
+        <p>Are you sure you want to delete <strong>@Model.Brand @Model.Model</strong>?</p>
+
+        @if (Model.Tickets.Any())
+        {
+            <div class="alert alert-warning small mb-3">
+                <i class="bi bi-exclamation-circle me-1"></i>
+                This device has <strong>@Model.Tickets.Count ticket(s)</strong> linked to it.
+                Deleting will fail until all tickets are removed.
+            </div>
+        }
+
+        <dl class="row mb-0 small">
+            <dt class="col-sm-4 text-muted">Serial No.</dt>
+            <dd class="col-sm-8">@(Model.SerialNumber ?? "—")</dd>
+            <dt class="col-sm-4 text-muted">Owner</dt>
+            <dd class="col-sm-8">@Model.Client.LastName @Model.Client.FirstName</dd>
+        </dl>
+    </div>
+    <div class="card-footer d-flex gap-2">
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash me-1"></i>Yes, Delete
+            </button>
+        </form>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</div>

@@ -1,5 +1,116 @@
-@{ ViewData["Title"] = "Devices"; }
-<h4 class="fw-semibold mb-4">Devices</h4>
-<div class="card">
-    <div class="card-body text-muted">Device list — coming soon.</div>
+@model IEnumerable<ServiceCenter.Domain.Entities.Device>
+@{
+    ViewData["Title"] = "Devices";
+    var search = ViewData["Search"] as string;
+    var clientId = ViewData["ClientId"] as int?;
+    var clientFilter = ViewBag.ClientFilter as string;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h4 class="fw-semibold mb-0">
+        Devices
+        @if (clientFilter != null)
+        {
+            <span class="text-muted fw-normal fs-6 ms-2">— @clientFilter</span>
+        }
+    </h4>
+    <a asp-action="Create" asp-route-clientId="@clientId" class="btn btn-primary">
+        <i class="bi bi-cpu me-1"></i>New Device
+    </a>
 </div>
+
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <form method="get" class="d-flex gap-2 flex-wrap">
+            @if (clientId.HasValue)
+            {
+                <input type="hidden" name="clientId" value="@clientId" />
+            }
+            <input type="text" name="search" value="@search" class="form-control form-control-sm"
+                   placeholder="Search by brand, model, S/N or client…" style="max-width:340px" />
+            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-search me-1"></i>Search
+            </button>
+            @if (!string.IsNullOrWhiteSpace(search) || clientId.HasValue)
+            {
+                <a asp-action="Index" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-x-lg me-1"></i>Clear
+                </a>
+            }
+        </form>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="card-body text-muted text-center py-5">
+            <i class="bi bi-cpu fs-1 d-block mb-2"></i>
+            @if (!string.IsNullOrWhiteSpace(search))
+            {
+                <span>No devices found for "<strong>@search</strong>".</span>
+            }
+            else
+            {
+                <span>No devices yet. <a asp-action="Create">Add the first one.</a></span>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Brand / Model</th>
+                        <th>Serial Number</th>
+                        <th>Client</th>
+                        <th>Tickets</th>
+                        <th>Since</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@d.Id" class="fw-semibold text-decoration-none">
+                                    @d.Brand @d.Model
+                                </a>
+                            </td>
+                            <td>@(d.SerialNumber ?? "—")</td>
+                            <td>
+                                <a asp-controller="Clients" asp-action="Details" asp-route-id="@d.ClientId"
+                                   class="text-decoration-none">
+                                    @d.Client.LastName @d.Client.FirstName
+                                </a>
+                            </td>
+                            <td>@d.Tickets.Count</td>
+                            <td>@d.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@d.Id"
+                                   class="btn btn-sm btn-outline-secondary me-1" title="Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@d.Id"
+                                   class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@d.Id"
+                                   class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-muted small">
+            @Model.Count() device(s) found
+        </div>
+    </div>
+}
