@@ -1,5 +1,127 @@
-@{ ViewData["Title"] = "Parts"; }
-<h4 class="fw-semibold mb-4">Parts</h4>
-<div class="card">
-    <div class="card-body text-muted">Parts inventory — coming soon.</div>
+@model IEnumerable<ServiceCenter.Domain.Entities.Part>
+@using ServiceCenter.Domain.Enums
+@{
+    ViewData["Title"] = "Parts";
+    var search = ViewData["Search"] as string;
+    var status = ViewData["Status"] as PartStatus?;
+}
+
+@functions {
+    static string StatusBadge(PartStatus s) => s switch
+    {
+        PartStatus.InStock    => "success",
+        PartStatus.LowStock   => "warning text-dark",
+        PartStatus.OutOfStock => "danger",
+        PartStatus.Ordered    => "info text-dark",
+        _                     => "secondary"
+    };
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h4 class="fw-semibold mb-0">Parts Inventory</h4>
+    @if (User.IsInRole("Admin") || User.IsInRole("ServiceManager"))
+    {
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>New Part
+        </a>
+    }
 </div>
+
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <form method="get" class="d-flex gap-2 flex-wrap">
+            <input type="text" name="search" value="@search" class="form-control form-control-sm"
+                   placeholder="Search by name, SKU…" style="max-width:280px" />
+            <select name="status" class="form-select form-select-sm" style="max-width:180px">
+                <option value="">All statuses</option>
+                @foreach (var s in Enum.GetValues<PartStatus>())
+                {
+                    <option value="@((int)s)" selected="@(status == s)">@s</option>
+                }
+            </select>
+            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-search me-1"></i>Filter
+            </button>
+            @if (!string.IsNullOrWhiteSpace(search) || status.HasValue)
+            {
+                <a asp-action="Index" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-x-lg me-1"></i>Clear
+                </a>
+            }
+        </form>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="card-body text-muted text-center py-5">
+            <i class="bi bi-box-seam fs-1 d-block mb-2"></i>
+            @if (!string.IsNullOrWhiteSpace(search) || status.HasValue)
+            {
+                <span>No parts match the current filters.</span>
+            }
+            else
+            {
+                <span>No parts yet. <a asp-action="Create">Add the first one.</a></span>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>SKU</th>
+                        <th>Status</th>
+                        <th class="text-center">In Stock</th>
+                        <th class="text-center">Threshold</th>
+                        <th class="text-end">Unit Price</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in Model)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@p.Id" class="fw-semibold text-decoration-none">
+                                    @p.Name
+                                </a>
+                            </td>
+                            <td class="text-muted">@(p.SKU ?? "—")</td>
+                            <td><span class="badge bg-@StatusBadge(p.Status)">@p.Status</span></td>
+                            <td class="text-center @(p.QuantityInStock <= p.LowStockThreshold && p.Status != PartStatus.OutOfStock ? "text-warning fw-semibold" : "")">
+                                @p.QuantityInStock
+                            </td>
+                            <td class="text-center text-muted">@p.LowStockThreshold</td>
+                            <td class="text-end">@p.UnitPrice.ToString("C")</td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@p.Id"
+                                   class="btn btn-sm btn-outline-secondary me-1" title="Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                @if (User.IsInRole("Admin") || User.IsInRole("ServiceManager"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@p.Id"
+                                       class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@p.Id"
+                                       class="btn btn-sm btn-outline-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-muted small">@Model.Count() part(s)</div>
+    </div>
+}
