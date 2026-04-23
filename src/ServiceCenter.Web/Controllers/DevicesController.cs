@@ -24,7 +24,7 @@ public class DevicesController : Controller
         ViewData["Search"] = search;
         ViewData["ClientId"] = clientId;
 
-        var query = _db.Devices.Include(d => d.Client).AsQueryable();
+        var query = _db.Devices.Include(d => d.Client).Include(d => d.Tickets).AsQueryable();
 
         if (clientId.HasValue)
             query = query.Where(d => d.ClientId == clientId.Value);
