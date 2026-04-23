@@ -1,19 +1,21 @@
 @model ServiceCenter.Web.Models.TicketFormViewModel
+@using ServiceCenter.Domain.Enums
 @{
-    ViewData["Title"] = "New Ticket";
-    ViewData["Breadcrumb"] = "<a href='/Tickets' class='text-decoration-none'>Tickets</a> / New Ticket";
+    ViewData["Title"] = "Edit Ticket";
+    ViewData["Breadcrumb"] = "<a href='/Tickets' class='text-decoration-none'>Tickets</a> / Edit";
 }
 
 <div class="d-flex align-items-center justify-content-between mb-4">
-    <h4 class="fw-semibold mb-0">New Ticket</h4>
-    <a asp-action="Index" class="btn btn-outline-secondary">
+    <h4 class="fw-semibold mb-0">Edit Ticket</h4>
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
         <i class="bi bi-arrow-left me-1"></i>Back
     </a>
 </div>
 
 <div class="card" style="max-width:680px">
     <div class="card-body">
-        <form asp-action="Create" method="post">
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+            <input asp-for="Id" type="hidden" />
             <div class="row g-3">
                 <div class="col-sm-6">
                     <label asp-for="ClientId" class="form-label"></label>
@@ -29,7 +31,11 @@
                     </select>
                     <span asp-validation-for="DeviceId" class="text-danger small"></span>
                 </div>
-                <div class="col-12">
+                <div class="col-sm-6">
+                    <label asp-for="Status" class="form-label"></label>
+                    <select asp-for="Status" asp-items="ViewBag.Statuses" class="form-select"></select>
+                </div>
+                <div class="col-sm-6">
                     <label asp-for="AssignedEngineerId" class="form-label"></label>
                     <select asp-for="AssignedEngineerId" asp-items="ViewBag.Engineers" class="form-select">
                         <option value="">— unassigned —</option>
@@ -49,6 +55,10 @@
                     <input asp-for="EstimatedTimeOut" type="date" class="form-control" />
                 </div>
                 <div class="col-sm-6">
+                    <label asp-for="ActualTimeOut" class="form-label"></label>
+                    <input asp-for="ActualTimeOut" type="date" class="form-control" />
+                </div>
+                <div class="col-sm-6">
                     <label asp-for="EstimatedPrice" class="form-label"></label>
                     <div class="input-group">
                         <span class="input-group-text">$</span>
@@ -59,9 +69,9 @@
             </div>
             <div class="d-flex gap-2 mt-4">
                 <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-check-lg me-1"></i>Create Ticket
+                    <i class="bi bi-check-lg me-1"></i>Save Changes
                 </button>
-                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Cancel</a>
             </div>
         </form>
     </div>
@@ -73,6 +83,7 @@
         document.getElementById('clientSelect').addEventListener('change', function () {
             const clientId = this.value;
             const deviceSelect = document.getElementById('deviceSelect');
+            const currentDevice = @Model.DeviceId;
             deviceSelect.innerHTML = '<option value="">— select device —</option>';
             if (!clientId) return;
             fetch(`/Tickets/GetDevicesByClient?clientId=${clientId}`)
@@ -82,6 +93,7 @@
                         const opt = document.createElement('option');
                         opt.value = d.id;
                         opt.text = d.name;
+                        if (d.id === currentDevice) opt.selected = true;
                         deviceSelect.appendChild(opt);
                     });
                 });

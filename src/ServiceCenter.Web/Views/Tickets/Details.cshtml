@@ -1,0 +1,193 @@
+@model ServiceCenter.Domain.Entities.Ticket
+@using ServiceCenter.Domain.Enums
+@{
+    ViewData["Title"] = Model.TicketNumber;
+    ViewData["Breadcrumb"] = $"<a href='/Tickets' class='text-decoration-none'>Tickets</a> / {Model.TicketNumber}";
+
+    string StatusBadge(TicketStatus s) => s switch
+    {
+        TicketStatus.New             => "secondary",
+        TicketStatus.InProgress      => "primary",
+        TicketStatus.WaitingForParts => "warning text-dark",
+        TicketStatus.Ready           => "success",
+        TicketStatus.Closed          => "dark",
+        TicketStatus.Cancelled       => "danger",
+        _                            => "secondary"
+    };
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h4 class="fw-semibold mb-0">@Model.TicketNumber</h4>
+        <span class="badge bg-@StatusBadge(Model.Status) mt-1">@Model.Status</span>
+    </div>
+    @if (User.IsInRole("Admin") || User.IsInRole("ServiceManager"))
+    {
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="bi bi-pencil me-1"></i>Edit
+            </a>
+            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                <i class="bi bi-trash me-1"></i>Delete
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back
+            </a>
+        </div>
+    }
+    else
+    {
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>Back
+        </a>
+    }
+</div>
+
+<div class="row g-4">
+    <!-- Main info -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header fw-semibold"><i class="bi bi-info-circle me-2"></i>Ticket Info</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-5 text-muted">Client</dt>
+                    <dd class="col-sm-7">
+                        <a asp-controller="Clients" asp-action="Details" asp-route-id="@Model.ClientId"
+                           class="text-decoration-none">@Model.Client.LastName @Model.Client.FirstName</a>
+                    </dd>
+                    <dt class="col-sm-5 text-muted">Device</dt>
+                    <dd class="col-sm-7">
+                        <a asp-controller="Devices" asp-action="Details" asp-route-id="@Model.DeviceId"
+                           class="text-decoration-none">@Model.Device.Brand @Model.Device.Model</a>
+                    </dd>
+                    <dt class="col-sm-5 text-muted">Engineer</dt>
+                    <dd class="col-sm-7">@(Model.AssignedEngineer?.UserName ?? "—")</dd>
+                    <dt class="col-sm-5 text-muted">Created by</dt>
+                    <dd class="col-sm-7">@Model.CreatedBy.UserName</dd>
+                    <dt class="col-sm-5 text-muted">Time In</dt>
+                    <dd class="col-sm-7">@Model.TimeIn.ToString("dd MMM yyyy HH:mm")</dd>
+                    <dt class="col-sm-5 text-muted">Est. Completion</dt>
+                    <dd class="col-sm-7">@(Model.EstimatedTimeOut?.ToString("dd MMM yyyy") ?? "—")</dd>
+                    <dt class="col-sm-5 text-muted">Actual Completion</dt>
+                    <dd class="col-sm-7">@(Model.ActualTimeOut?.ToString("dd MMM yyyy") ?? "—")</dd>
+                    <dt class="col-sm-5 text-muted">Est. Price</dt>
+                    <dd class="col-sm-7">@(Model.EstimatedPrice.HasValue ? $"{Model.EstimatedPrice:C}" : "—")</dd>
+                    <dt class="col-sm-5 text-muted">Total Price</dt>
+                    <dd class="col-sm-7 fw-semibold">@Model.TotalPrice.ToString("C")</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <!-- Problem & notes -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header fw-semibold"><i class="bi bi-chat-left-text me-2"></i>Problem Description</div>
+            <div class="card-body">
+                <p style="white-space:pre-wrap" class="mb-3">@Model.ProblemDescription</p>
+                @if (!string.IsNullOrWhiteSpace(Model.InternalNotes))
+                {
+                    <hr />
+                    <p class="text-muted small mb-1 fw-semibold">Internal Notes</p>
+                    <p style="white-space:pre-wrap" class="mb-0 small">@Model.InternalNotes</p>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Work Items -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-wrench me-2"></i>Work Items</span>
+                <span class="badge bg-secondary">@Model.WorkItems.Count</span>
+            </div>
+            @if (Model.WorkItems.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Work Type</th>
+                                <th>Description</th>
+                                <th>Engineer</th>
+                                <th class="text-end">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var w in Model.WorkItems)
+                            {
+                                <tr>
+                                    <td>@w.WorkType.Name</td>
+                                    <td class="text-muted">@(w.Description ?? "—")</td>
+                                    <td>@(w.Engineer?.UserName ?? "—")</td>
+                                    <td class="text-end">@w.Price.ToString("C")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="3" class="text-end fw-semibold">Total work</td>
+                                <td class="text-end fw-semibold">@Model.WorkItems.Sum(w => w.Price).ToString("C")</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="card-body text-muted">No work items recorded yet.</div>
+            }
+        </div>
+    </div>
+
+    <!-- Parts -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header fw-semibold d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-box-seam me-2"></i>Parts Used</span>
+                <span class="badge bg-secondary">@Model.TicketParts.Count</span>
+            </div>
+            @if (Model.TicketParts.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Part</th>
+                                <th>SKU</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-end">Unit Price</th>
+                                <th class="text-end">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var tp in Model.TicketParts)
+                            {
+                                <tr>
+                                    <td>@tp.Part.Name</td>
+                                    <td class="text-muted">@(tp.Part.SKU ?? "—")</td>
+                                    <td class="text-center">@tp.Quantity</td>
+                                    <td class="text-end">@tp.UnitPriceAtTime.ToString("C")</td>
+                                    <td class="text-end">@tp.TotalPrice.ToString("C")</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="4" class="text-end fw-semibold">Total parts</td>
+                                <td class="text-end fw-semibold">
+                                    @Model.TicketParts.Sum(tp => tp.TotalPrice).ToString("C")
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="card-body text-muted">No parts used yet.</div>
+            }
+        </div>
+    </div>
+</div>
