@@ -1,0 +1,44 @@
+@model ServiceCenter.Domain.Entities.PartOrder
+@{
+    ViewData["Title"] = $"Delete Order #{Model.Id}";
+    ViewData["Breadcrumb"] = "<a href='/PartOrders' class='text-decoration-none'>Orders</a> / Delete";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h4 class="fw-semibold mb-0">Delete Order</h4>
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+</div>
+
+<div class="card border-danger" style="max-width:520px">
+    <div class="card-header bg-danger text-white fw-semibold">
+        <i class="bi bi-exclamation-triangle me-2"></i>Confirm Deletion
+    </div>
+    <div class="card-body">
+        <p>Are you sure you want to delete <strong>Order #@Model.Id</strong>?</p>
+
+        @if (Model.Status == ServiceCenter.Domain.Enums.PartOrderStatus.Received)
+        {
+            <div class="alert alert-warning small mb-3">
+                <i class="bi bi-exclamation-circle me-1"></i>
+                This order has already been <strong>received</strong>. Deleting it will not reverse the stock update.
+            </div>
+        }
+
+        <dl class="row mb-0 small">
+            <dt class="col-sm-4 text-muted">Part</dt>
+            <dd class="col-sm-8">@Model.Part.Name</dd>
+            <dt class="col-sm-4 text-muted">Quantity</dt>
+            <dd class="col-sm-8">@Model.Quantity</dd>
+            <dt class="col-sm-4 text-muted">Status</dt>
+            <dd class="col-sm-8">@Model.Status</dd>
+        </dl>
+    </div>
+    <div class="card-footer d-flex gap-2">
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+            <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Yes, Delete</button>
+        </form>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</div>
