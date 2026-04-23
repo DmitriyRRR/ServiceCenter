@@ -1,0 +1,47 @@
+@model ServiceCenter.Domain.Entities.Part
+@{
+    ViewData["Title"] = "Delete Part";
+    ViewData["Breadcrumb"] = "<a href='/Parts' class='text-decoration-none'>Parts</a> / Delete";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h4 class="fw-semibold mb-0">Delete Part</h4>
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+</div>
+
+<div class="card border-danger" style="max-width:520px">
+    <div class="card-header bg-danger text-white fw-semibold">
+        <i class="bi bi-exclamation-triangle me-2"></i>Confirm Deletion
+    </div>
+    <div class="card-body">
+        <p>Are you sure you want to delete <strong>@Model.Name</strong>?</p>
+
+        @if (Model.TicketParts.Any() || Model.PartOrders.Any())
+        {
+            <div class="alert alert-warning small mb-3">
+                <i class="bi bi-exclamation-circle me-1"></i>
+                This part is referenced in <strong>@Model.TicketParts.Count ticket(s)</strong> and
+                <strong>@Model.PartOrders.Count order(s)</strong>. Deletion will fail until those are removed.
+            </div>
+        }
+
+        <dl class="row mb-0 small">
+            <dt class="col-sm-4 text-muted">SKU</dt>
+            <dd class="col-sm-8">@(Model.SKU ?? "—")</dd>
+            <dt class="col-sm-4 text-muted">In Stock</dt>
+            <dd class="col-sm-8">@Model.QuantityInStock</dd>
+            <dt class="col-sm-4 text-muted">Unit Price</dt>
+            <dd class="col-sm-8">@Model.UnitPrice.ToString("C")</dd>
+        </dl>
+    </div>
+    <div class="card-footer d-flex gap-2">
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash me-1"></i>Yes, Delete
+            </button>
+        </form>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</div>

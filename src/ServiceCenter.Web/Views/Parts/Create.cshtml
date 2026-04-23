@@ -1,0 +1,68 @@
+@model ServiceCenter.Web.Models.PartFormViewModel
+@{
+    ViewData["Title"] = "New Part";
+    ViewData["Breadcrumb"] = "<a href='/Parts' class='text-decoration-none'>Parts</a> / New Part";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h4 class="fw-semibold mb-0">New Part</h4>
+    <a asp-action="Index" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+</div>
+
+<div class="card" style="max-width:600px">
+    <div class="card-body">
+        <form asp-action="Create" method="post">
+            <div class="row g-3">
+                <div class="col-12">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-6">
+                    <label asp-for="SKU" class="form-label"></label>
+                    <input asp-for="SKU" class="form-control" placeholder="e.g. LCD-IPHONE15-BLK" />
+                    <span asp-validation-for="SKU" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-6">
+                    <label asp-for="Status" class="form-label"></label>
+                    <select asp-for="Status" asp-items="ViewBag.Statuses" class="form-select"></select>
+                </div>
+                <div class="col-sm-4">
+                    <label asp-for="UnitPrice" class="form-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input asp-for="UnitPrice" class="form-control" type="number" step="0.01" min="0" />
+                    </div>
+                    <span asp-validation-for="UnitPrice" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-4">
+                    <label asp-for="QuantityInStock" class="form-label"></label>
+                    <input asp-for="QuantityInStock" class="form-control" type="number" min="0" />
+                    <span asp-validation-for="QuantityInStock" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-4">
+                    <label asp-for="LowStockThreshold" class="form-label"></label>
+                    <input asp-for="LowStockThreshold" class="form-control" type="number" min="0" />
+                    <span asp-validation-for="LowStockThreshold" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg me-1"></i>Create
+                </button>
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}
