@@ -1,0 +1,42 @@
+@model ServiceCenter.Domain.Entities.WorkType
+@{
+    ViewData["Title"] = "Delete Work Type";
+    ViewData["Breadcrumb"] = "<a href='/WorkTypes' class='text-decoration-none'>Work Types</a> / Delete";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h4 class="fw-semibold mb-0">Delete Work Type</h4>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+</div>
+
+<div class="card border-danger" style="max-width:520px">
+    <div class="card-header bg-danger text-white fw-semibold">
+        <i class="bi bi-exclamation-triangle me-2"></i>Confirm Deletion
+    </div>
+    <div class="card-body">
+        <p>Are you sure you want to delete <strong>@Model.Name</strong>?</p>
+
+        @if (Model.WorkItems.Any())
+        {
+            <div class="alert alert-warning small mb-3">
+                <i class="bi bi-exclamation-circle me-1"></i>
+                This work type is used in <strong>@Model.WorkItems.Count work item(s)</strong>.
+                Consider <strong>deactivating</strong> it instead of deleting.
+            </div>
+        }
+
+        <dl class="row mb-0 small">
+            <dt class="col-sm-5 text-muted">Default Price</dt>
+            <dd class="col-sm-7">@Model.DefaultPrice.ToString("C")</dd>
+            <dt class="col-sm-5 text-muted">Status</dt>
+            <dd class="col-sm-7">@(Model.IsActive ? "Active" : "Inactive")</dd>
+        </dl>
+    </div>
+    <div class="card-footer d-flex gap-2">
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+            <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i>Yes, Delete</button>
+        </form>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-warning">Deactivate Instead</a>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</div>
