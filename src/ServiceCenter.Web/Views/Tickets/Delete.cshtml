@@ -1,0 +1,41 @@
+@model ServiceCenter.Domain.Entities.Ticket
+@{
+    ViewData["Title"] = "Delete Ticket";
+    ViewData["Breadcrumb"] = "<a href='/Tickets' class='text-decoration-none'>Tickets</a> / Delete";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h4 class="fw-semibold mb-0">Delete Ticket</h4>
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+</div>
+
+<div class="card border-danger" style="max-width:520px">
+    <div class="card-header bg-danger text-white fw-semibold">
+        <i class="bi bi-exclamation-triangle me-2"></i>Confirm Deletion
+    </div>
+    <div class="card-body">
+        <p>Are you sure you want to delete ticket <strong>@Model.TicketNumber</strong>?</p>
+        <div class="alert alert-warning small mb-3">
+            <i class="bi bi-exclamation-circle me-1"></i>
+            All associated work items and parts will also be permanently deleted.
+        </div>
+        <dl class="row mb-0 small">
+            <dt class="col-sm-4 text-muted">Client</dt>
+            <dd class="col-sm-8">@Model.Client.LastName @Model.Client.FirstName</dd>
+            <dt class="col-sm-4 text-muted">Device</dt>
+            <dd class="col-sm-8">@Model.Device.Brand @Model.Device.Model</dd>
+            <dt class="col-sm-4 text-muted">Status</dt>
+            <dd class="col-sm-8">@Model.Status</dd>
+        </dl>
+    </div>
+    <div class="card-footer d-flex gap-2">
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+            <button type="submit" class="btn btn-danger">
+                <i class="bi bi-trash me-1"></i>Yes, Delete
+            </button>
+        </form>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</div>

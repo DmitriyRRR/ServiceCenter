@@ -1,13 +1,132 @@
-@{ ViewData["Title"] = "Tickets"; }
-<div class="d-flex justify-content-between align-items-center mb-4">
+@model IEnumerable<ServiceCenter.Domain.Entities.Ticket>
+@using ServiceCenter.Domain.Enums
+@{
+    ViewData["Title"] = "Tickets";
+    var search = ViewData["Search"] as string;
+    var status = ViewData["Status"] as TicketStatus?;
+}
+
+@functions {
+    static string StatusBadge(TicketStatus s) => s switch
+    {
+        TicketStatus.New            => "secondary",
+        TicketStatus.InProgress     => "primary",
+        TicketStatus.WaitingForParts => "warning text-dark",
+        TicketStatus.Ready          => "success",
+        TicketStatus.Closed         => "dark",
+        TicketStatus.Cancelled      => "danger",
+        _                           => "secondary"
+    };
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
     <h4 class="fw-semibold mb-0">Tickets</h4>
     @if (User.IsInRole("Admin") || User.IsInRole("ServiceManager"))
     {
-        <a asp-action="Create" class="btn btn-primary btn-sm">
+        <a asp-action="Create" class="btn btn-primary">
             <i class="bi bi-plus-circle me-1"></i>New Ticket
         </a>
     }
 </div>
-<div class="card">
-    <div class="card-body text-muted">Ticket list — coming soon.</div>
+
+<div class="card mb-4">
+    <div class="card-body py-2">
+        <form method="get" class="d-flex gap-2 flex-wrap">
+            <input type="text" name="search" value="@search" class="form-control form-control-sm"
+                   placeholder="Search by number, client, device…" style="max-width:300px" />
+            <select name="status" class="form-select form-select-sm" style="max-width:180px">
+                <option value="">All statuses</option>
+                @foreach (var s in Enum.GetValues<TicketStatus>())
+                {
+                    <option value="@((int)s)" selected="@(status == s)">@s</option>
+                }
+            </select>
+            <button type="submit" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-search me-1"></i>Filter
+            </button>
+            @if (!string.IsNullOrWhiteSpace(search) || status.HasValue)
+            {
+                <a asp-action="Index" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-x-lg me-1"></i>Clear
+                </a>
+            }
+        </form>
+    </div>
 </div>
+
+@if (!Model.Any())
+{
+    <div class="card">
+        <div class="card-body text-muted text-center py-5">
+            <i class="bi bi-ticket-detailed fs-1 d-block mb-2"></i>
+            @if (!string.IsNullOrWhiteSpace(search) || status.HasValue)
+            {
+                <span>No tickets match the current filters.</span>
+            }
+            else
+            {
+                <span>No tickets yet.</span>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Ticket #</th>
+                        <th>Client</th>
+                        <th>Device</th>
+                        <th>Status</th>
+                        <th>Engineer</th>
+                        <th>Created</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model)
+                    {
+                        <tr>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@t.Id" class="fw-semibold text-decoration-none">
+                                    @t.TicketNumber
+                                </a>
+                            </td>
+                            <td>
+                                <a asp-controller="Clients" asp-action="Details" asp-route-id="@t.ClientId"
+                                   class="text-decoration-none">@t.Client.LastName @t.Client.FirstName</a>
+                            </td>
+                            <td>@t.Device.Brand @t.Device.Model</td>
+                            <td>
+                                <span class="badge bg-@StatusBadge(t.Status)">@t.Status</span>
+                            </td>
+                            <td>@(t.AssignedEngineer != null ? t.AssignedEngineer.UserName : "—")</td>
+                            <td>@t.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-id="@t.Id"
+                                   class="btn btn-sm btn-outline-secondary me-1" title="Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                @if (User.IsInRole("Admin") || User.IsInRole("ServiceManager"))
+                                {
+                                    <a asp-action="Edit" asp-route-id="@t.Id"
+                                       class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@t.Id"
+                                       class="btn btn-sm btn-outline-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-muted small">@Model.Count() ticket(s)</div>
+    </div>
+}
