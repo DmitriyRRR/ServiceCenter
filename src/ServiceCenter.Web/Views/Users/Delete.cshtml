@@ -1,0 +1,39 @@
+@model ServiceCenter.Domain.Entities.ApplicationUser
+@{
+    ViewData["Title"] = "Deactivate User";
+    ViewData["Breadcrumb"] = "<a href='/Users' class='text-decoration-none'>Users</a> / Deactivate";
+    var userRole = ViewBag.UserRole as string ?? "—";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <h4 class="fw-semibold mb-0">Deactivate User</h4>
+    <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Back</a>
+</div>
+
+<div class="card border-warning" style="max-width:520px">
+    <div class="card-header bg-warning text-dark fw-semibold">
+        <i class="bi bi-person-x me-2"></i>Confirm Deactivation
+    </div>
+    <div class="card-body">
+        <p>
+            Are you sure you want to deactivate <strong>@Model.FirstName @Model.LastName</strong>?
+            They will no longer be able to log in, but their history will be preserved.
+        </p>
+        <dl class="row mb-0 small">
+            <dt class="col-sm-4 text-muted">Email</dt>
+            <dd class="col-sm-8">@Model.Email</dd>
+            <dt class="col-sm-4 text-muted">Role</dt>
+            <dd class="col-sm-8">@userRole</dd>
+            <dt class="col-sm-4 text-muted">Joined</dt>
+            <dd class="col-sm-8">@Model.CreatedAt.ToString("dd MMM yyyy")</dd>
+        </dl>
+    </div>
+    <div class="card-footer d-flex gap-2">
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+            <button type="submit" class="btn btn-warning text-dark">
+                <i class="bi bi-person-x me-1"></i>Yes, Deactivate
+            </button>
+        </form>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</div>
