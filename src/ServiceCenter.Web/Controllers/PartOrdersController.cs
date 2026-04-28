@@ -102,7 +102,7 @@ public class PartOrdersController : Controller
         await _db.SaveChangesAsync();
 
         TempData["Success"] = $"Order #{order.Id} created.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Details), new { id = order.Id });
     }
 
     [Authorize(Roles = "Admin,ServiceManager")]

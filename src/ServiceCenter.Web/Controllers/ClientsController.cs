@@ -84,7 +84,7 @@ public class ClientsController : Controller
         await _db.SaveChangesAsync();
 
         TempData["Success"] = $"Client {client.FirstName} {client.LastName} created.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Details), new { id = client.Id });
     }
 
     public async Task<IActionResult> Edit(int id)
@@ -131,7 +131,7 @@ public class ClientsController : Controller
         await _db.SaveChangesAsync();
 
         TempData["Success"] = $"Client {client.FirstName} {client.LastName} updated.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Details), new { id = client.Id });
     }
 
     public async Task<IActionResult> Delete(int id)

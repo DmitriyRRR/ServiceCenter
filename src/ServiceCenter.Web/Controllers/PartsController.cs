@@ -95,7 +95,7 @@ public class PartsController : Controller
         await _db.SaveChangesAsync();
 
         TempData["Success"] = $"Part \"{part.Name}\" created.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Details), new { id = part.Id });
     }
 
     [Authorize(Roles = "Admin,ServiceManager")]
@@ -149,7 +149,7 @@ public class PartsController : Controller
         await _db.SaveChangesAsync();
 
         TempData["Success"] = $"Part \"{part.Name}\" updated.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Details), new { id = part.Id });
     }
 
     [Authorize(Roles = "Admin,ServiceManager")]

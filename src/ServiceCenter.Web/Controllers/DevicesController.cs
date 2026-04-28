@@ -96,7 +96,7 @@ public class DevicesController : Controller
         await _db.SaveChangesAsync();
 
         TempData["Success"] = $"Device {device.Brand} {device.Model} created.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Details), new { id = device.Id });
     }
 
     public async Task<IActionResult> Edit(int id)
@@ -143,7 +143,7 @@ public class DevicesController : Controller
         await _db.SaveChangesAsync();
 
         TempData["Success"] = $"Device {device.Brand} {device.Model} updated.";
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Details), new { id = device.Id });
     }
 
     public async Task<IActionResult> Delete(int id)
