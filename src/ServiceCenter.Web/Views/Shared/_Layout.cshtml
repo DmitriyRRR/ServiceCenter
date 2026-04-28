@@ -155,6 +155,28 @@
                 @RenderBody()
             </main>
         </div>
+
+        <!-- Auto-logout: hidden form + warning modal -->
+        <form id="idle-logout-form" asp-controller="Account" asp-action="Logout" method="post" class="d-none"></form>
+        <div class="modal fade" id="idleWarningModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="idleWarningLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header border-0 pb-0">
+                        <h5 class="modal-title" id="idleWarningLabel">
+                            <i class="bi bi-clock-history text-warning me-2"></i>Session Expiring
+                        </h5>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0">You have been inactive. You will be logged out in <strong id="idle-countdown">2:00</strong>.</p>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-primary" id="idle-stay-btn">
+                            <i class="bi bi-arrow-repeat me-1"></i>Stay Logged In
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 }
 else
@@ -168,5 +190,59 @@ else
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
 @await RenderSectionAsync("Scripts", required: false)
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <script>
+    (function () {
+        var WARN_AFTER   = 28 * 60 * 1000;   // show warning at 28 min
+        var LOGOUT_AFTER = 30 * 60 * 1000;   // hard logout at 30 min
+
+        var modalEl      = document.getElementById('idleWarningModal');
+        var countdownEl  = document.getElementById('idle-countdown');
+        var logoutForm   = document.getElementById('idle-logout-form');
+        var bsModal      = new bootstrap.Modal(modalEl);
+
+        var warnTimer, logoutTimer, countdownInterval;
+
+        function doLogout() {
+            clearInterval(countdownInterval);
+            logoutForm.submit();
+        }
+
+        function updateCountdown(s) {
+            var m = Math.floor(s / 60);
+            countdownEl.textContent = m + ':' + String(s % 60).padStart(2, '0');
+        }
+
+        function showWarning() {
+            var remaining = 120;
+            updateCountdown(remaining);
+            bsModal.show();
+            countdownInterval = setInterval(function () {
+                remaining--;
+                updateCountdown(remaining);
+                if (remaining <= 0) doLogout();
+            }, 1000);
+        }
+
+        function resetTimers() {
+            clearTimeout(warnTimer);
+            clearTimeout(logoutTimer);
+            clearInterval(countdownInterval);
+            bootstrap.Modal.getInstance(modalEl)?.hide();
+            warnTimer    = setTimeout(showWarning, WARN_AFTER);
+            logoutTimer  = setTimeout(doLogout,    LOGOUT_AFTER);
+        }
+
+        document.getElementById('idle-stay-btn').addEventListener('click', resetTimers);
+
+        ['mousemove', 'keydown', 'mousedown', 'scroll', 'touchstart'].forEach(function (evt) {
+            document.addEventListener(evt, resetTimers, { passive: true });
+        });
+
+        resetTimers(); // start on page load
+    })();
+    </script>
+}
 </body>
 </html>
